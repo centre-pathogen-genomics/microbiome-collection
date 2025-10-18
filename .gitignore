@@ -1,0 +1,8 @@
+CMC_DB/
+cmc.nohup
+*.fastq
+*.fastq.gz
+*.log
+*.txt
+*.out
+*.tsv
