@@ -6,3 +6,4 @@ cmc.nohup
 *.txt
 *.out
 *.tsv
+MANIFESTS/
