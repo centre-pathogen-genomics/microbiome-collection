@@ -10,8 +10,11 @@ Current pipeline:
 - AMR Profiling: abritamr  
 - Annotation: prokka  
 
-To do:  
-- taxonomic classification by barbet  
-- reannotation by bakta  
+To do list:  
+Major:
+- rewrite in nextflow
+Minor:
+- taxonomic classification: barbet  
+- reannotation: bakta  
 - primary metabolites: gutsmash  
 - secondary metabolites: antismash, bagel  
