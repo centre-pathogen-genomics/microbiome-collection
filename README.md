@@ -11,8 +11,10 @@ Current pipeline:
 - Annotation: prokka  
 
 To do list:  
+
 Major:
 - rewrite in nextflow  
+
 Minor:
 - taxonomic classification: barbet  
 - reannotation: bakta  
