@@ -11,7 +11,7 @@ Current pipeline:
 - Annotation: prokka  
 
 To do:  
-[ ] taxonomic classification by barbet  
-[ ] reannotation by bakta  
-[ ] primary metabolites: gutsmash  
-[ ] secondary metabolites: antismash, bagel  
+- taxonomic classification by barbet  
+- reannotation by bakta  
+- primary metabolites: gutsmash  
+- secondary metabolites: antismash, bagel  
