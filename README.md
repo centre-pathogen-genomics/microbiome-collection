@@ -12,7 +12,7 @@ Current pipeline:
 
 To do list:  
 Major:
-- rewrite in nextflow
+- rewrite in nextflow  
 Minor:
 - taxonomic classification: barbet  
 - reannotation: bakta  
