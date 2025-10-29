@@ -15,15 +15,13 @@ The `SCRIPTS/` directory contains `.sh` scripts for each step (see current pipel
 
 It is designed to be run on a collection of samples all from the same sequencing run (eg. as they are sequenced over time as part of an ongoing project) but will work on any collection of isolates really.  
 
-Each step can also be run seaparately by executing the relevant script which will source parameters from `cmc.config`.  
+Each step can also be run seaparately by executing the relevant script which will source parameters from `cmc.config`, for example:
 
-for example:
 ```bash
 SCRIPTS/prokka.sh
 ```
 
-The input manifest file is a four column, headerless tsv with one row per isolate.  
-It describes:  
+The input manifest file is a four column, headerless tsv with one row per isolate, describing:  
 
 Col1: sample basename used for sequencing (eg. DMG or barcode number)  
 Col2: CMC ID (outputs will be renamed using this prefix)  
@@ -46,6 +44,8 @@ Current pipeline:
 - Assembly QC: checkm  
 - AMR Profiling: abritamr  
 - Annotation: prokka  
+
+:construction::construction::construction:
 
 To do list:  
 
