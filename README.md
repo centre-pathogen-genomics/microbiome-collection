@@ -53,7 +53,7 @@ Major:
 - rewrite in nextflow  
 
 Minor:
-- support from ONT / hybrid sequencing
+- support for ONT / hybrid sequencing
 - taxonomic classification: barbet  
 - reannotation: bakta  
 - primary metabolites: gutsmash  
