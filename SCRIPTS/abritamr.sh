@@ -22,6 +22,6 @@ while read i j ; do
 
 done < "$OUTDIR"/.isolatesbatchfile
 
-rm -f "$OUTDIR"/.isolatesbatchfile update_abritamr_db.log
-
 abritamr -v > "$OUTDIR"/VERSIONS/abritamr.info
+
+rm -f "$OUTDIR"/.isolatesbatchfile update_abritamr_db.log
