@@ -37,6 +37,12 @@ DMG2306289      CMC00004        /home/data/DMG2306289_S252_R1_001.fastq.gz      
 DMG2306290      CMC00005        /home/data/DMG2306290_S253_R1_001.fastq.gz      /home/data/DMG2306290_S253_R2_001.fastq.gz
 ```
 
+There is also a utility script provided called makes the input manifest if you provide a two column, headerless tsv file with the first two columns (sample basename and CMC ID for renaming, file is called `names` in the example below) and a path to the directory containing the FASTQ files - but it isn't very cleve, it is just a `while read` loop that does an `ls` for the forward and reverse reads - it can be run like so:
+
+```bash
+SCRIPTS/makeinputmanifest.sh names /home/damg/data/I2024-018
+```
+
 Current pipeline:  
 - Raw data processing: fastp  
 - Genome assembly: shovill  
