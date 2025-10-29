@@ -64,8 +64,8 @@ Major
 
 Minor
 - Add support for ONT and hybrid assemblies
-- Alternative taxonomic classificaiton: Barbet
-- Alternative annotation with Bakta
-- Alternative annotation with eggnogmapper
-- Functional profiling: gutsmash
-- Secondary metabolite detection: aniSMASH, BAGEL
+- Alternative taxonomic classificaiton: [Barbet](https://github.com/houndry/barbet)
+- Alternative annotation: [Bakta](https://github.com/oschwengers/bakta)
+- Alternative annotation: [eggnog-mapper](https://github.com/eggnogdb/eggnog-mapper)
+- Functional profiling: [gutsmash](https://github.com/victoriapascal/gutsmash)
+- Secondary metabolite detection: [antiSMASH](https://github.com/antismash/antismash), [BAGEL](https://github.com/annejong/BAGEL4)
