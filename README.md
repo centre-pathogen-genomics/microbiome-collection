@@ -55,7 +55,7 @@ This simple script loops over each entry in names, lists the corresponding R1 an
 |2|[shovill](https://github.com/tseemann/shovill)|_De novo_ genome assembly|
 |3|[GTDB-tk](https://github.com/Ecogenomics/GTDBTk)|Taxonomic classification|
 |4|[CheckM](https://github.com/Ecogenomics/CheckM)|Assembly quality assessment|
-|6|[abriTAMR](https://github.com/MDU-PHL/abritamr)|AMR profiling|
+|5|[abriTAMR](https://github.com/MDU-PHL/abritamr)|AMR profiling|
 |6|[Prokka](https://github.com/tseemann/prokka)|Genome annotation|
 
 ## Next steps
