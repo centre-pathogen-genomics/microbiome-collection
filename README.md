@@ -4,7 +4,7 @@
 
 This repository contains scripts for quality control, assembly, annotation, and taxonomic classification of isolate genomes. The workflow is designed for high-throughput processing of samples from a single sequencing batch (e.g. isolates sequenced periodically as part of an ongoing project), but it can be applied to any collection of bacterial isolates.
 
-## :rocket: Quick Start
+## Quick Start
 To run the full pipeline
 ```bash
 ./cmc.sh
