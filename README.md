@@ -60,7 +60,7 @@ This simple script loops over each entry in names, lists the corresponding R1 an
 
 ## Next steps
 Major
-- rewrite in nextflow
+- rewrite in nextflow  
 Minor
 - Add support for ONT and hybrid assemblies
 - Alternative taxonomic classificaiton: Barbet
