@@ -84,7 +84,7 @@ if [ ! -d "${OUTDIR}/VERSIONS/" ] ; then mkdir -p "$OUTDIR"/VERSIONS/ ; fi
 
 # identify which samples need to be processed
 # skip samples which already have a fastp output
-# assumes they have been pfully processed
+# assumes they have been fully processed
 > "$OUTDIR"/.manifest
 while IFS=$'\t' read -r dmg cmc r1 r2 ; do
 
@@ -101,23 +101,26 @@ while IFS=$'\t' read -r dmg cmc r1 r2 ; do
 done < "$MANIFEST"
 
 # run fastp qc
-SCRIPTS/fastp.sh
+if [ ! -d "$OUTDIR"/FASTP/ ] ; then SCRIPTS/fastp.sh ; fi
 
 # run shovill assembly
-SCRIPTS/shovill.sh
+if [ ! -d "$OUTDIR"/SHOVILL/ ] ; then SCRIPTS/shovill.sh ; fi
 
 # make files of sample names and assembly locations
 ls "$OUTDIR"/SHOVILL/*/*_contigs.fa > "$OUTDIR"/.asspaths
 sed 's,.*/,, ; s,_contigs.fa$,,' "$OUTDIR"/.asspaths > "$OUTDIR"/.assnames
 
-# run gtdbtk taxonomic classification
-SCRIPTS/gtdbtk_classify.sh
-
 # run assembly qc
-SCRIPTS/checkm.sh
+if [ ! -d "$OUTDIR"/CHECKM/ ] ; then SCRIPTS/checkm.sh ; fi
+
+# run gtdbtk taxonomic classification
+if [ ! -d "$OUTDIR"/GTDBTK/ ] ; then SCRIPTS/gtdbtk_classify.sh ; fi
 
 # run abritamr amr profiling
-SCRIPTS/abritamr.sh
+if [ ! -d "$OUTDIR"/ABRITAMR/ ] ; then SCRIPTS/abritamr.sh ; fi
 
 # run prokka
-SCRIPTS/prokka.sh
+if [ ! -d "$OUTDIR"/PROKKA/ ] ; then SCRIPTS/prokka.sh ; fi
+
+# run eggnog-mapper
+if [ ! -d "$OUTDIR"/EMAPPER/ ] ; then SCRIPTS/emapper.sh ; fi
