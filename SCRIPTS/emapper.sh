@@ -4,7 +4,7 @@ source ./cmc.config
 
 # source conda and load env
 source "$CONDA_SH_PATH"
-conda activate /home/cwwalsh/miniconda3/envs/eggnog-mapper
+conda activate /home/cwwalsh/miniforge3/envs/eggnog-mapper
 
 mkdir -p "$OUTDIR"/EMAPPER/
 
@@ -16,10 +16,10 @@ while read i ; do
         --cpu 24 \
         --itype proteins \
         -i "$OUTDIR"/PROKKA/"$i"/"$i".faa \
-        --data_dir /home/cwwalsh/Databases/Eggnog-mapper/ \
+        --data_dir /home/cwwalsh/Databases/EggnogMapper/ \
         --output "$i" \
         --output_dir "$OUTDIR"/EMAPPER/"$i"/
 
 done < "$OUTDIR"/.assnames
 
-emapper.py --version --data_dir /home/cwwalsh/Databases/Eggnog-mapper/ > "$OUTDIR"/VERSIONS/emapper.info
+emapper.py --version --data_dir /home/cwwalsh/Databases/EggnogMapper/ > "$OUTDIR"/VERSIONS/emapper.info

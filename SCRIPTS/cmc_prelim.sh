@@ -1,19 +1,12 @@
 #!/bin/bash
 
-# usage: ./cmc.sh
+# usage: ./cmc_prelim.sh
 
-# requires the presence of cmc.config, SCRIPTS/, and MANIFESTS/ in the working directory
-# cmc.config is a text file that defines the behaviour of the pipeline
-# primarily the input manifest name and output directory
-
-# for the manifest:
-# column 1 is the DAMG ID
-# column 2 is the CMC ID
-# column 3 is paths to forward reads
-# column 4 is paths to reverse reads
-
-# currently only works on illumina data
-# in future - add short/long/hybrid as config option to handle different seq types
+# only runs the first few steps of cmc.sh
+# designed to give a quick peek 
+# qc, taxonomy
+# without the annotation etc.
+# see cmc.sh for info on input formats
 
 # check that config file exists and load
 if [[ -f ./cmc.config ]] ; then
@@ -101,15 +94,6 @@ if [ ! -d "$OUTDIR"/CHECKM/ ] ; then SCRIPTS/checkm.sh ; fi
 
 # run gtdbtk taxonomic classification
 if [ ! -d "$OUTDIR"/GTDBTK/ ] ; then SCRIPTS/gtdbtk_classify.sh ; fi
-
-# run abritamr amr profiling
-if [ ! -d "$OUTDIR"/ABRITAMR/ ] ; then SCRIPTS/abritamr.sh ; fi
-
-# run prokka
-if [ ! -d "$OUTDIR"/PROKKA/ ] ; then SCRIPTS/prokka.sh ; fi
-
-# run eggnog-mapper
-if [ ! -d "$OUTDIR"/EMAPPER/ ] ; then SCRIPTS/emapper.sh ; fi
 
 # format DB files
 if [ ! -d "$OUTDIR"/DB/ ] ; then SCRIPTS/db_files.sh ; fi

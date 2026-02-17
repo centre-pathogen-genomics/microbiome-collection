@@ -15,13 +15,23 @@ The pipeline automatically sources parameters from the cmc.config file, includin
 - output directory
 - path to the appropriate `conda.sh` environment loader
 
-Each processing step is implemented as an individual script in the SCRIPTS/ directory. For example, to run annotation separately:
+Each processing step is implemented as an individual script in the SCRIPTS/ directory, which can be either run separately or as part of the full pipeline.  
+When running the full pipeline, each step will only run if the relevant output directory does not exist. 
 
+If you want to only run the prokka annovation step, you can do either of the following:  
+
+Run the relevant script
 ```bash
 SCRIPTS/prokka.sh
 ```
 
-Each script sources variables from cmc.config, ensuring consistent paths and parameters across steps.
+Or delete the current output directory and run the full pipeline
+```bash
+rm -rf "$OUTDIR"/PROKKA
+./cmc.sh
+```
+
+Each script also sources variables from cmc.config, ensuring consistent paths and parameters across steps.
 
 ## Input Manifest Format
 The input manifest is a headerless TSV file with four columns, one row per isolate:
@@ -61,11 +71,15 @@ This simple script loops over each entry in names, lists the corresponding R1 an
 ## Next steps
 Major
 - rewrite in nextflow  
+- run checkm2
+- run gtdbtk
+- run emapper
 
 Minor
 - Add support for ONT and hybrid assemblies
 - Alternative taxonomic classificaiton: [Barbet](https://github.com/houndry/barbet)
 - Alternative annotation: [Bakta](https://github.com/oschwengers/bakta)
-- Alternative annotation: [eggnog-mapper](https://github.com/eggnogdb/eggnog-mapper)
 - Functional profiling: [gutsmash](https://github.com/victoriapascal/gutsmash)
 - Secondary metabolite detection: [antiSMASH](https://github.com/antismash/antismash), [BAGEL](https://github.com/annejong/BAGEL4)
+- CAZyme detection: [dbCAN3](https://bcb.unl.edu/dbCAN3/)
+- Phenotypic trait prediction: [Traitar](https://github.com/hzi-bifo/traitar)

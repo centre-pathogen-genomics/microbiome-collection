@@ -4,7 +4,7 @@ source ./cmc.config
 
 # source conda and load env
 source "$CONDA_SH_PATH"
-conda activate /home/cwwalsh/miniconda3/envs/gtdbtk-2.6.1
+conda activate /home/cwwalsh/miniforge3/envs/gtdbtk
 
 paste "$OUTDIR"/.asspaths "$OUTDIR"/.assnames > "$OUTDIR"/.isolatesbatchfile_temp
 
@@ -25,6 +25,6 @@ gtdbtk classify_wf \
 	-x fa \
 	--cpus 24 \
 	--force \
-	--skani_sketch_dir /home/cwwalsh/Databases/GTDBTK/release226/skani/sketches/
+	--skani_sketch_dir /home/shared/db/gtdbtk/release226/skani/sketches/
 
 gtdbtk -v | head -n 1 | sed ' s,Copy.*,,' > "$OUTDIR"/VERSIONS/gtdbtk.info

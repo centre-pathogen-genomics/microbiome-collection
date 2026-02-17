@@ -4,7 +4,7 @@ source ./cmc.config
 
 # source conda and load env
 source "$CONDA_SH_PATH"
-conda activate /home/cwwalsh/miniconda3/envs/shovill
+conda activate /home/cwwalsh/miniforge3/envs/shovill
 
 # make output directory if needed
 if [ ! -d "${OUTDIR}/SHOVILL/" ] ; then mkdir -p "$OUTDIR"/SHOVILL/ ; fi

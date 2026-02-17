@@ -4,7 +4,7 @@ source ./cmc.config
 
 # source conda and load env
 source "$CONDA_SH_PATH"
-conda activate /home/cwwalsh/miniconda3/envs/prokka
+conda activate /home/cwwalsh/miniforge3/envs/prokka
 
 paste "$OUTDIR"/.assnames "$OUTDIR"/.asspaths > "$OUTDIR"/.isolatesbatchfile
 
