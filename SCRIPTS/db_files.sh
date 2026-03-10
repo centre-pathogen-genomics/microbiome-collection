@@ -53,9 +53,9 @@ sed 's,_contigs,,' "$OUTDIR"/CHECKM/quality_report.tsv > "$OUTDIR"/DB/genome_qc.
 
 # gtdbtk
 if [ -f "$OUTDIR"/GTDBTK/gtdbtk.bac120.summary.tsv ] ; then
-    cp "$OUTDIR"/GTDBTK/gtdbtk.bac120.summary.tsv "$OUTDIR"/DB/genome_taxonomy_bac.tsv
+    csvtk cut -t -f -16 "$OUTDIR"/GTDBTK/gtdbtk.bac120.summary.tsv > "$OUTDIR"/DB/genome_taxonomy_bac.tsv
 fi
 
 if [ -f "$OUTDIR"/GTDBTK/gtdbtk.ar53.summary.tsv ] ; then
-    cp "$OUTDIR"/GTDBTK/gtdbtk.ar53.summary.tsv "$OUTDIR"/DB/genome_taxonomy_ar.tsv
+    csvtk cut -t -f -16 "$OUTDIR"/GTDBTK/gtdbtk.ar53.summary.tsv > "$OUTDIR"/DB/genome_taxonomy_ar.tsv
 fi

@@ -23,8 +23,3 @@ while IFS=$'\t' read -r dmg cmc r1 r2 ; do
 done < "$OUTDIR"/.manifest
 
 shovill -v "$OUTDIR"/VERSIONS/shovill.info
-
-seqkit stats -Tab CMC_DB/I2024-018/SHOVILL/*/*_contigs.fa \
-    | cut -f 1,4,5,13 \
-    | sed 's,_contigs.fa,,' \
-    | sed '1s/.*/Sample\tContigs\tGenomeSize\tN50/' > CMC_DB/I2024-018/shovill.tsv
