@@ -111,5 +111,8 @@ if [ ! -d "$OUTDIR"/PROKKA/ ] ; then SCRIPTS/prokka.sh ; fi
 # run eggnog-mapper
 if [ ! -d "$OUTDIR"/EMAPPER/ ] ; then SCRIPTS/emapper.sh ; fi
 
+# run antismash
+if [ ! -d "$OUTDIR"/ANTISMASH/ ] ; then SCRIPTS/antismash.sh ; fi
+
 # format DB files
 if [ ! -d "$OUTDIR"/DB/ ] ; then SCRIPTS/db_files.sh ; fi
