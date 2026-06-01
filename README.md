@@ -1,6 +1,6 @@
 # microbiome-collection
 
-**Pipeline for processing genomic data from the Centre for Pathogen Genomics (CPG) Microbiome Collection** — a biobank of genome-sequenced human gut microbiome isolates.  
+**Pipeline for processing genomic data from the Centre for Pathogen Genomics Microbiome Collection (CMC)** — a biobank of genome-sequenced human gut microbiome isolates.  
 
 This repository contains scripts for quality control, assembly, annotation, and taxonomic classification of isolate genomes. The workflow is designed for high-throughput processing of samples from a single sequencing batch (e.g. isolates sequenced periodically as part of an ongoing project), but it can be applied to any collection of bacterial isolates.
 
