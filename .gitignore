@@ -7,3 +7,4 @@ cmc.nohup
 *.out
 *.tsv
 MANIFESTS/
+ANALYSIS/

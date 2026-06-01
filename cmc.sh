@@ -1,10 +1,8 @@
 #!/bin/bash
 
-# usage: ./cmc.sh
+# usage: ./cmc.sh inputmanifest outputdirectory
 
-# requires the presence of cmc.config, SCRIPTS/, and MANIFESTS/ in the working directory
-# cmc.config is a text file that defines the behaviour of the pipeline
-# primarily the input manifest name and output directory
+# requires the presence of SCRIPTS/ in the working directory
 
 # for the manifest:
 # column 1 is the DAMG ID
@@ -15,26 +13,21 @@
 # currently only works on illumina data
 # in future - add short/long/hybrid as config option to handle different seq types
 
-# check that config file exists and load
-if [[ -f ./cmc.config ]] ; then
-  source ./cmc.config
+# source conda
+if [[ -f /home/shared/conda/etc/profile.d/conda.sh ]] ; then
+  source /home/shared/conda/etc/profile.d/conda.sh
 else
-  echo "Config file 'cmc.config' not found in current working directory"
+  echo "ERROR: Cannot find conda.sh at /home/shared/conda/etc/profile.d/conda.sh"
   exit 1
 fi
 
-# source conda
-if [[ -f "$CONDA_SH_PATH" ]] ; then
-  source "$CONDA_SH_PATH"
-else
-  echo "ERROR: Cannot find conda.sh at ${CONDA_SH_PATH}"
-  exit 1
-fi
+MANIFEST=$1
+OUTDIR=$2
 
 # confirm that manifest exists and all read files exist
 if [ ! -f "$MANIFEST" ] ; then
 
-  echo "Manifest file not found: ${MANIFEST}"
+  echo "Manifest file not found: $MANIFEST"
   exit 1
 
   else
@@ -56,7 +49,8 @@ if [ ! -f "$MANIFEST" ] ; then
         inputerror="true"     
 
       fi
-  done < "$MANIFEST"
+
+      done < "$MANIFEST"
 
   if [ "$inputerror" == "true" ] ; then
 
@@ -69,8 +63,8 @@ fi
 # check if output directory exists
 if [ -d "$OUTDIR" ] ; then
 
-    echo "Warning: Output directory ${OUTDIR} already exists"
-    echo "Will not overwrite existing outputs"
+    echo "Output directory ${OUTDIR} already exists"
+    echo "Will not overwrite existing subdirectories"
 
 else
 
@@ -86,10 +80,10 @@ if [ ! -d "${OUTDIR}/VERSIONS/" ] ; then mkdir -p "$OUTDIR"/VERSIONS/ ; fi
 cp "$MANIFEST" "$OUTDIR"/.manifest
 
 # run fastp qc
-if [ ! -d "$OUTDIR"/FASTP/ ] ; then SCRIPTS/fastp.sh ; fi
+if [ ! -d "$OUTDIR"/FASTP/ ] ; then SCRIPTS/fastp.sh "$OUTDIR" ; fi
 
 # run shovill assembly
-if [ ! -d "$OUTDIR"/SHOVILL/ ] ; then SCRIPTS/shovill.sh ; fi
+if [ ! -d "$OUTDIR"/SHOVILL/ ] ; then SCRIPTS/shovill.sh "$OUTDIR" ; fi
 
 # make files of sample names and assembly locations
 # only for non-empty assemblies
@@ -97,22 +91,22 @@ find "$OUTDIR"/SHOVILL/ -type f -name '*_contigs.fa' -size +0c > "$OUTDIR"/.assp
 sed 's,.*/,, ; s,_contigs.fa$,,' "$OUTDIR"/.asspaths > "$OUTDIR"/.assnames
 
 # run assembly qc
-if [ ! -d "$OUTDIR"/CHECKM/ ] ; then SCRIPTS/checkm.sh ; fi
+if [ ! -d "$OUTDIR"/CHECKM/ ] ; then SCRIPTS/checkm.sh "$OUTDIR" ; fi
 
 # run gtdbtk taxonomic classification
-if [ ! -d "$OUTDIR"/GTDBTK/ ] ; then SCRIPTS/gtdbtk_classify.sh ; fi
+if [ ! -d "$OUTDIR"/GTDBTK/ ] ; then SCRIPTS/gtdbtk_classify.sh "$OUTDIR" ; fi
 
 # run abritamr amr profiling
-if [ ! -d "$OUTDIR"/ABRITAMR/ ] ; then SCRIPTS/abritamr.sh ; fi
+if [ ! -d "$OUTDIR"/ABRITAMR/ ] ; then SCRIPTS/abritamr.sh "$OUTDIR" ; fi
 
 # run prokka
-if [ ! -d "$OUTDIR"/PROKKA/ ] ; then SCRIPTS/prokka.sh ; fi
+if [ ! -d "$OUTDIR"/PROKKA/ ] ; then SCRIPTS/prokka.sh "$OUTDIR" ; fi
 
 # run eggnog-mapper
-if [ ! -d "$OUTDIR"/EMAPPER/ ] ; then SCRIPTS/emapper.sh ; fi
+if [ ! -d "$OUTDIR"/EMAPPER/ ] ; then SCRIPTS/emapper.sh "$OUTDIR" ; fi
 
 # run antismash
-if [ ! -d "$OUTDIR"/ANTISMASH/ ] ; then SCRIPTS/antismash.sh ; fi
+if [ ! -d "$OUTDIR"/ANTISMASH/ ] ; then SCRIPTS/antismash.sh "$OUTDIR" ; fi
 
 # format DB files
-if [ ! -d "$OUTDIR"/DB/ ] ; then SCRIPTS/db_files.sh ; fi
+if [ ! -d "$OUTDIR"/DB/ ] ; then SCRIPTS/db_files.sh "$OUTDIR" ; fi

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# usage: ./cmc_prelim.sh
+# usage: ./cmc_prelim.sh inputmanifest outputdirectory
 
 # only runs the first few steps of cmc.sh
 # designed to give a quick peek 
@@ -8,21 +8,16 @@
 # without the annotation etc.
 # see cmc.sh for info on input formats
 
-# check that config file exists and load
-if [[ -f ./cmc.config ]] ; then
-  source ./cmc.config
+# source conda
+if [[ -f /home/shared/conda/etc/profile.d/conda.sh ]] ; then
+  source /home/shared/conda/etc/profile.d/conda.sh
 else
-  echo "Config file 'cmc.config' not found in current working directory"
+  echo "ERROR: Cannot find conda.sh at /home/shared/conda/etc/profile.d/conda.sh"
   exit 1
 fi
 
-# source conda
-if [[ -f "$CONDA_SH_PATH" ]] ; then
-  source "$CONDA_SH_PATH"
-else
-  echo "ERROR: Cannot find conda.sh at ${CONDA_SH_PATH}"
-  exit 1
-fi
+MANIFEST=$1
+OUTDIR=$2
 
 # confirm that manifest exists and all read files exist
 if [ ! -f "$MANIFEST" ] ; then

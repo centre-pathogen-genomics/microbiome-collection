@@ -1,10 +1,10 @@
 #!/bin/bash
 
-source ./cmc.config
-
 # source conda and load env
-source "$CONDA_SH_PATH"
+source /home/shared/conda/etc/profile.d/conda.sh
 conda activate /home/cwwalsh/miniforge3/envs/eggnog-mapper
+
+OUTDIR=$1
 
 mkdir -p "$OUTDIR"/EMAPPER/
 

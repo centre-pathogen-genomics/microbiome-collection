@@ -10,10 +10,14 @@ To run the full pipeline
 ./cmc.sh
 ```
 
-The pipeline automatically sources parameters from the cmc.config file, including:
+The pipeline requires two positional arguments
 - paths to input files (see _Input Manifest Format_ below)
 - output directory
-- path to the appropriate `conda.sh` environment loader
+
+For example:
+```bash
+./cmc.sh manifest_Run1.tsv Output_Run1/
+```
 
 Each processing step is implemented as an individual script in the SCRIPTS/ directory, which can be either run separately or as part of the full pipeline.  
 When running the full pipeline, each step will only run if the relevant output directory does not exist. 
@@ -30,8 +34,6 @@ Or delete the current output directory and run the full pipeline
 rm -rf "$OUTDIR"/PROKKA
 ./cmc.sh
 ```
-
-Each script also sources variables from cmc.config, ensuring consistent paths and parameters across steps.
 
 ## Input Manifest Format
 The input manifest is a headerless TSV file with four columns, one row per isolate:
@@ -71,9 +73,6 @@ This simple script loops over each entry in names, lists the corresponding R1 an
 ## Next steps
 Major
 - rewrite in nextflow  
-- run checkm2
-- run gtdbtk
-- run emapper
 
 Minor
 - Add support for ONT and hybrid assemblies

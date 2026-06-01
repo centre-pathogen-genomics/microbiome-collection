@@ -1,10 +1,10 @@
 #!/bin/bash
 
-source ./cmc.config
-
 # source conda and load env
-source "$CONDA_SH_PATH"
+source /home/shared/conda/etc/profile.d/conda.sh
 conda activate /home/cwwalsh/miniconda3/envs/kraken2
+
+OUTDIR=$1
 
 # make output directories if needed
 if [ ! -d "${OUTDIR}/KRAKEN/GTDB/" ] ; then mkdir -p "$OUTDIR"/KRAKEN/GTDB/ ; fi 

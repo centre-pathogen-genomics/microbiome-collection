@@ -1,22 +1,24 @@
 #!/bin/bash
 
-source ./cmc.config
-
 # source conda and load env
-source "$CONDA_SH_PATH"
+source /home/shared/conda/etc/profile.d/conda.sh
 conda activate /home/shared/conda/envs/antismash
 
+OUTDIR=$1
+
 mkdir -p "$OUTDIR"/ANTISMASH/
+
+paste "$OUTDIR"/.assnames "$OUTDIR"/.asspaths > "$OUTDIR"/.isolatesbatchfile
 
 while read i j ; do 
 
 	antismash \
 		-c 24 \
 		--databases /home/shared/db/antismash/ \
-		--output-dir "$OUTDIR"/ANTISMASH/"$j" \
-		--output-basename "$j" \
-		--genefinding-gff3 "$OUTDIR"/PROKKA/"$j"/"$j".gff \
-		"$OUTDIR"/PROKKA/"$j"/"$j".fna
+		--output-dir "$OUTDIR"/ANTISMASH/"$i" \
+		--output-basename "$i" \
+		--genefinding-gff3 "$OUTDIR"/PROKKA/"$i"/"$i".gff \
+		"$OUTDIR"/PROKKA/"$i"/"$i".fna
 
 done < "$OUTDIR"/.isolatesbatchfile
 
