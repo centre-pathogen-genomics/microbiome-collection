@@ -34,20 +34,25 @@ for i in 95 98 99 999 9999 99999 ; do
 	    --S_algorithm fastANI \
         --S_ani 0."$i"
 
-	awk -F, -v p="$i" 'BEGIN {OFS=","} 
+	awk -F , -v p="$i" 'BEGIN {OFS=","} 
         NR==1 {print $1, p "_cluster"} 
         NR>1  {sub(/\.fasta$/, "", $1); print $1, p "_" $2}
     ' DREP/"$i"/data_tables/Cdb.csv > DREP/"$i"/cmc_clusterinfo.csv
 
-	awk -F, -v p="$i" 'BEGIN {OFS=","} 
-        NR==1 {print "cluster", "representative_genome"}
-        NR>1  {sub(/\.fasta$/, "", $1); print p "_" $2, $1}
+	awk -F , -v p="$i" 'BEGIN {OFS=","} 
+        NR == 1 {print "cluster", "representative_genome"}
+        NR > 1  {sub(/\.fasta$/, "", $1); print p "_" $2, $1}
     ' DREP/"$i"/data_tables/Wdb.csv > DREP/"$i"/cmc_clusterreps.csv
 
 done
 
 csvtk join --left-join -f "genome" DREP/*/cmc_clusterinfo.csv > DB_FILES/drep_clusterinfo.csv
 csvtk concat DREP/*/cmc_clusterreps.csv > DB_FILES/drep_clusterreps.csv
+
+awk -F, 'BEGIN {OFS=","} 
+	NR == 1 {print "genome", "query", "ANI", "alignment_coverage"}
+	NR > 1 {if ($3 >= 0.99) print $1,$2,$3,$4}' DREP/99999/data_tables/Ndb.csv \
+	sed 's,.fasta,,g' > DB_FILES/drep_99anipairs.csv
 
 rm -rf DREP/GENOMES/ drep_quality.csv
      
