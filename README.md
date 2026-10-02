@@ -84,6 +84,55 @@ SCRIPTS/makeinputmanifest.sh names /path/to/data/directory/
 This simple script loops over each entry in names, lists the corresponding R1 and R2 FASTQs in the specified directory, and creates a complete four-column manifest.
 (Note: this script is not smart — it assumes consistent file naming and structure.)
 
+## Pipeline Overview
+```mermaid
+flowchart TD
+    MAN[/"<b>Input manifest</b><br/>DMG ID · CMC ID<br/>R1 path · R2 path"/]
+    FQ[/"<b>Paired-end Illumina reads</b><br/>R1 + R2 FASTQ per isolate"/]
+
+    CHECK{"<b>check_manifest.sh</b><br/>Validate manifest<br/>and read files"}
+    STOP(["Exit and report errors"])
+
+    FASTP["<b>fastp</b><br/>Read QC and adapter trimming<br/><i>FASTP/</i>"]
+    SHOVILL["<b>shovill</b><br/><i>De novo</i> genome assembly<br/><i>SHOVILL/</i>"]
+    FILTER{"Non-empty<br/>assemblies only"}
+
+    CHECKM["<b>CheckM2</b><br/>Completeness and contamination<br/><i>CHECKM/</i>"]
+    GTDB["<b>GTDB-Tk</b><br/>Taxonomic classification<br/><i>GTDBTK/</i>"]
+    AMR["<b>abriTAMR</b><br/>AMR, stress and virulence genes<br/><i>ABRITAMR/</i>"]
+    PROKKA["<b>Prokka</b><br/>Gene prediction and annotation<br/><i>PROKKA/</i>"]
+    EMAP["<b>eggNOG-mapper</b><br/>Functional annotation of proteins<br/><i>EMAPPER/</i>"]
+    ANTI["<b>antiSMASH</b><br/>Biosynthetic gene clusters<br/><i>ANTISMASH/</i>"]
+
+    DB[("<b>db_files.sh</b><br/>One table per tool for the batch,<br/>formatted for FileMaker Pro<br/><i>DB/</i>")]
+
+    MAN --> CHECK
+    FQ --> CHECK
+    CHECK -->|"fail"| STOP
+    CHECK -->|"pass"| FASTP
+    FASTP -->|"trimmed reads"| SHOVILL
+    SHOVILL -->|"contigs"| FILTER
+    FILTER --> CHECKM
+    FILTER --> GTDB
+    FILTER --> AMR
+    FILTER --> PROKKA
+    PROKKA -->|"proteins"| EMAP
+    PROKKA -->|"genome + GFF"| ANTI
+
+    FASTP -.->|"read_qc.csv"| DB
+    CHECKM -.->|"genome_qc.tsv"| DB
+    GTDB -.->|"genome_taxonomy_*.tsv"| DB
+    AMR -.->|"abritamr.tsv"| DB
+    EMAP -.->|"emapper_combined.tsv"| DB
+
+    classDef prelim fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef full fill:#f3f4f6,stroke:#6b7280,color:#111827
+    class FASTP,SHOVILL,CHECKM,GTDB prelim
+    class AMR,PROKKA,EMAP,ANTI full
+```
+
+Steps shaded blue are also run by `cmc_prelim.sh`, which writes its tables to `DB_PRELIM/` instead of `DB/`. Dotted arrows show which outputs are combined into the database tables (see _Database Files_ below).
+
 ## Current Pipeline Steps
 |Step|Tool|Purpose|Output directory|
 |---|---|---|---|
