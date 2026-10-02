@@ -6,7 +6,10 @@
 source /home/shared/conda/etc/profile.d/conda.sh
 conda activate /home/shared/conda/envs/gtdbtk/
 
-GTDBTK_DATA_PATH=/home/shared/db/gtdbtk/release232/
+# number of threads (set THREADS before running to override)
+THREADS=${THREADS:-24}
+
+export GTDBTK_DATA_PATH=/home/shared/db/gtdbtk/release232/
 
 csvtk cut -t -f 2,1 DB_FILES/manifest.tsv > temp_batchfile
 
@@ -19,7 +22,7 @@ gtdbtk de_novo_wf \
     --out_dir ./DENOVOTREE \
     --skip_gtdb_refs \
     --bacteria \
-    --cpus 48 \
+    --cpus "$THREADS" \
     --force
 
 rm -f temp_batchfile temp_taxonomy

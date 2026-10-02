@@ -4,13 +4,16 @@
 source /home/shared/conda/etc/profile.d/conda.sh
 conda activate /home/cwwalsh/miniforge3/envs/abritamr
 
+# number of threads (set THREADS before running to override)
+THREADS=${THREADS:-24}
+
 OUTDIR=$1
 
 paste "$OUTDIR"/.assnames "$OUTDIR"/.asspaths > "$OUTDIR"/.isolatesbatchfile
 
-abritamr run --contigs "$OUTDIR"/.isolatesbatchfile --jobs 24
+abritamr run --contigs "$OUTDIR"/.isolatesbatchfile --jobs "$THREADS"
 
-mkdir "$OUTDIR"/ABRITAMR/
+mkdir -p "$OUTDIR"/ABRITAMR/
 
 mv abritamr.log abritamr.txt summary_matches.txt summary_partials.txt summary_virulence.txt "$OUTDIR"/ABRITAMR/
 

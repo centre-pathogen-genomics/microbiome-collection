@@ -8,10 +8,11 @@ conda activate /home/cwwalsh/miniforge3/envs/fastp
 OUTDIR=$1
 
 # make output directory if needed
-if [ ! -d "${OUTDIR}/DB/" ] ; then mkdir -p "$OUTDIR"/DB/ ; fi 
+if [ ! -d "${OUTDIR}/DB_PRELIM/" ] ; then mkdir -p "$OUTDIR"/DB_PRELIM/ ; fi 
 
 ##### REFORMATTING INDIVIDUAL OUTPUTS INTO ONE OUTPUT PER TOOL PER RUN
 ##### FORMATTED FOR FILEMAKER PRO
+##### ONLY COLLATES OUTPUTS FROM cmc_prelim.sh (fastp, checkm2, gtdbtk)
 
 # fastp
 ls "$OUTDIR"/FASTP/*.json | sed 's,.*/,, ; s,_fastp.json,,' > "$OUTDIR"/.names
@@ -34,7 +35,7 @@ JQ_FILTER='{
     too_long_reads: .filtering_result.too_long_reads
 }'
 
-FASTP_OUTPUT_CSV="${OUTDIR}/DB/read_qc.csv"
+FASTP_OUTPUT_CSV="${OUTDIR}/DB_PRELIM/read_qc.csv"
 
 FIRST_CMC=$(head -n 1 "$OUTDIR/.names" | cut -f2)
 jq -r --arg samp "SampleID" "$JQ_FILTER | keys_unsorted | join(\",\")" \
@@ -67,54 +68,14 @@ sed 's,_contigs,,' "$OUTDIR"/CHECKM/quality_report.tsv \
             if ($col["Contamination"] > 5) notes = (notes == "" ? "" : notes ", ") "high contamination"
             print $0, (notes == "" ? "pass" : notes)
         }
-    ' > "$OUTDIR"/DB/genome_qc.tsv
+    ' > "$OUTDIR"/DB_PRELIM/genome_qc.tsv
 
 # gtdbtk
 if [ -f "$OUTDIR"/GTDBTK/gtdbtk.bac120.summary.tsv ] ; then
-    csvtk cut -t -f -16 "$OUTDIR"/GTDBTK/gtdbtk.bac120.summary.tsv > "$OUTDIR"/DB/genome_taxonomy_bac.tsv
+    csvtk cut -t -f -16 "$OUTDIR"/GTDBTK/gtdbtk.bac120.summary.tsv > "$OUTDIR"/DB_PRELIM/genome_taxonomy_bac.tsv
 fi
 
 if [ -f "$OUTDIR"/GTDBTK/gtdbtk.ar53.summary.tsv ] ; then
-    csvtk cut -t -f -16 "$OUTDIR"/GTDBTK/gtdbtk.ar53.summary.tsv > "$OUTDIR"/DB/genome_taxonomy_ar.tsv
+    csvtk cut -t -f -16 "$OUTDIR"/GTDBTK/gtdbtk.ar53.summary.tsv > "$OUTDIR"/DB_PRELIM/genome_taxonomy_ar.tsv
 fi
-
-# abritamr
-ls "$OUTDIR"/ABRITAMR/*/*_amrfinder.out | sed 's,.*/,, ; s,_amrfinder.out,,' > "$OUTDIR"/.names
-
-while IFS=$'\t' read -r cmc ; do
-
-    awk -v cmc="${cmc}" '
-        NR == 1 { print "SampleID\t" $0 }
-        NR > 1  { print cmc "\t" $0 }
-    ' "$OUTDIR"/ABRITAMR/"$cmc"/"$cmc"_amrfinder.out > "$OUTDIR"/ABRITAMR/"$cmc"/"$cmc"_amrfinder_sampleid.out
-
-done < "$OUTDIR"/.names
-
-csvtk concat -t "$OUTDIR"/ABRITAMR/*/*_amrfinder_sampleid.out > "$OUTDIR"/DB/abritamr.tsv
-
-rm -rf "$OUTDIR"/.names
-
-# eggnog_mapper
-ls "$OUTDIR"/EMAPPER/*/*.emapper.annotations | sed 's,.*/,, ; s,\.emapper\.annotations,,' > "$OUTDIR"/.names
-
-while IFS=$'\t' read -r cmc ; do
-
-    awk -v cmc="${cmc}" -F'\t' -v OFS='\t' '
-        /^##/ { next }
-        
-        /^#query/ { 
-            sub(/^#query/, "query")
-            print "SampleID", $0
-            next
-        }
-        
-        # Print standard data rows with the sample ID prepended
-        { print cmc, $0 }
-    ' "$OUTDIR"/EMAPPER/"$cmc"/"$cmc".emapper.annotations > "$OUTDIR"/EMAPPER/"$cmc"/"$cmc"_emapper_sampleid.tsv
-
-done < "$OUTDIR"/.names
-
-csvtk concat -t "$OUTDIR"/EMAPPER/*/*_emapper_sampleid.tsv > "$OUTDIR"/DB/emapper_combined.tsv
-
-rm -rf "$OUTDIR"/.names
 

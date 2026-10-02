@@ -4,8 +4,11 @@
 source /home/shared/conda/etc/profile.d/conda.sh
 conda activate /home/shared/conda/envs/gtdbtk/
 
+# number of threads (set THREADS before running to override)
+THREADS=${THREADS:-24}
+
 OUTDIR=$1
-GTDBTK_DATA_PATH=/home/shared/db/gtdbtk/release232/
+export GTDBTK_DATA_PATH=/home/shared/db/gtdbtk/release232/
 
 paste "$OUTDIR"/.asspaths "$OUTDIR"/.assnames > "$OUTDIR"/.isolatesbatchfile_temp
 
@@ -24,7 +27,7 @@ gtdbtk classify_wf \
 	--batchfile "$OUTDIR"/.isolatesbatchfile \
 	--out_dir "$OUTDIR"/GTDBTK \
 	-x fa \
-	--cpus 24 \
+	--cpus "$THREADS" \
 	--force 
 
 gtdbtk -v | head -n 1 | sed ' s,Copy.*,,' > "$OUTDIR"/VERSIONS/gtdbtk.info

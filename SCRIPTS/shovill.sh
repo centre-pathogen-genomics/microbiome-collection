@@ -4,6 +4,9 @@
 source /home/shared/conda/etc/profile.d/conda.sh
 conda activate /home/cwwalsh/miniforge3/envs/shovill
 
+# number of threads (set THREADS before running to override)
+THREADS=${THREADS:-24}
+
 OUTDIR=$1
 
 # make output directory if needed
@@ -16,10 +19,10 @@ while IFS=$'\t' read -r dmg cmc r1 r2 ; do
         --R2 "$OUTDIR"/FASTP/"$cmc"_R2_paired.fastq.gz \
         --outdir "$OUTDIR"/SHOVILL/"$cmc"/ \
         --minlen 1000 \
-        --cpus 24 
+        --cpus "$THREADS" 
 
     mv "$OUTDIR"/SHOVILL/"$cmc"/contigs.fa "$OUTDIR"/SHOVILL/"$cmc"/"$cmc"_contigs.fa
 
 done < "$OUTDIR"/.manifest
 
-shovill -v "$OUTDIR"/VERSIONS/shovill.info
+shovill -v > "$OUTDIR"/VERSIONS/shovill.info

@@ -4,6 +4,9 @@
 source /home/shared/conda/etc/profile.d/conda.sh
 conda activate /home/cwwalsh/miniforge3/envs/eggnog-mapper
 
+# number of threads (set THREADS before running to override)
+THREADS=${THREADS:-24}
+
 OUTDIR=$1
 
 mkdir -p "$OUTDIR"/EMAPPER/
@@ -13,7 +16,7 @@ while read i ; do
     mkdir -p "$OUTDIR"/EMAPPER/"$i"/
     
     emapper.py \
-        --cpu 24 \
+        --cpu "$THREADS" \
         --itype proteins \
         -i "$OUTDIR"/PROKKA/"$i"/"$i".faa \
         --data_dir /home/cwwalsh/Databases/EggnogMapper/ \

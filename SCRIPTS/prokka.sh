@@ -4,6 +4,9 @@
 source /home/shared/conda/etc/profile.d/conda.sh
 conda activate /home/cwwalsh/miniforge3/envs/prokka
 
+# number of threads (set THREADS before running to override)
+THREADS=${THREADS:-24}
+
 OUTDIR=$1
 
 paste "$OUTDIR"/.assnames "$OUTDIR"/.asspaths > "$OUTDIR"/.isolatesbatchfile
@@ -17,7 +20,7 @@ while read i j ; do
         --force \
         --prefix "$i" \
         --compliant \
-        --cpus 24 \
+        --cpus "$THREADS" \
         "$j"
 
 done < "$OUTDIR"/.isolatesbatchfile

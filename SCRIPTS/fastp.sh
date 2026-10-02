@@ -4,6 +4,9 @@
 source /home/shared/conda/etc/profile.d/conda.sh
 conda activate /home/cwwalsh/miniforge3/envs/fastp
 
+# number of threads (set THREADS before running to override)
+THREADS=${THREADS:-24}
+
 OUTDIR=$1
 
 # make output directory if needed
@@ -19,7 +22,7 @@ while IFS=$'\t' read -r dmg cmc r1 r2 ; do
         --out2 "$OUTDIR"/FASTP/"$cmc"_R2_paired.fastq.gz \
         --detect_adapter_for_pe \
         --length_required 50 \
-        --thread 16 \
+        --thread "$THREADS" \
         --html "$OUTDIR"/FASTP/"$cmc"_fastp.html \
         --json "$OUTDIR"/FASTP/"$cmc"_fastp.json
 

@@ -6,7 +6,10 @@
 source /home/shared/conda/etc/profile.d/conda.sh
 conda activate /home/cwwalsh/miniforge3/envs/drep/
 
-CHECKM_DATA_PATH=/home/shared/db/checkm/
+# number of threads (set THREADS before running to override)
+THREADS=${THREADS:-24}
+
+export CHECKM_DATA_PATH=/home/shared/db/checkm/
 
 mkdir -p DREP/GENOMES/
 
@@ -30,7 +33,7 @@ for i in 95 98 99 999 9999 99999 ; do
 		DREP/"$i" \
 		-g DREP/GENOMES/* \
 		--genomeInfo drep_quality.csv \
-        -p 24 \
+        -p "$THREADS" \
 	    --S_algorithm fastANI \
         --S_ani 0."$i"
 
@@ -52,7 +55,7 @@ csvtk concat DREP/*/cmc_clusterreps.csv > DB_FILES/drep_clusterreps.csv
 awk -F, 'BEGIN {OFS=","} 
 	NR == 1 {print "genome", "query", "ANI", "alignment_coverage"}
 	NR > 1 {if ($3 >= 0.99) print $1,$2,$3,$4}' DREP/99999/data_tables/Ndb.csv \
-	sed 's,.fasta,,g' > DB_FILES/drep_99anipairs.csv
+	| sed 's,\.fasta,,g' > DB_FILES/drep_99anipairs.csv
 
 rm -rf DREP/GENOMES/ drep_quality.csv
      

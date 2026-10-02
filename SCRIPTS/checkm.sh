@@ -4,6 +4,9 @@
 source /home/shared/conda/etc/profile.d/conda.sh
 conda activate /home/shared/conda/envs/checkm2/
 
+# number of threads (set THREADS before running to override)
+THREADS=${THREADS:-24}
+
 OUTDIR=$1
 
 # copy non-empty assemblies to a tempdirectory
@@ -11,7 +14,7 @@ mkdir "$OUTDIR"/CHECKM_TEMP
 while read i ; do cp "$i" "$OUTDIR"/CHECKM_TEMP ; done < "$OUTDIR"/.asspaths
 
 checkm2 predict \
-    --threads 24 \
+    --threads "$THREADS" \
     --input "$OUTDIR"/CHECKM_TEMP/* \
     --output-directory "$OUTDIR"/CHECKM \
     --remove_intermediates \

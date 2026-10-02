@@ -24,41 +24,8 @@ fi
 MANIFEST=$1
 OUTDIR=$2
 
-# confirm that manifest exists and all read files exist
-if [ ! -f "$MANIFEST" ] ; then
-
-  echo "Manifest file not found: $MANIFEST"
-  exit 1
-
-  else
-
-    inputerror="false"
-
-    while IFS=$'\t' read -r dmg cmc r1 r2 ; do
-
-      if [ ! -f "$r1" ] ; then
-
-        echo "File not found: $r1"
-        inputerror="true"    
-
-      fi
-
-      if [ ! -f "$r2" ] ; then
-
-        echo "File not found: $r2"
-        inputerror="true"     
-
-      fi
-
-      done < "$MANIFEST"
-
-  if [ "$inputerror" == "true" ] ; then
-
-    echo "One or more input files are missing. Exiting."
-    exit 1  
-
-  fi
-fi
+# confirm that manifest is correctly formatted and all read files exist
+SCRIPTS/check_manifest.sh "$MANIFEST" || exit 1
 
 # check if output directory exists
 if [ -d "$OUTDIR" ] ; then
