@@ -116,7 +116,18 @@ PLAN_RUN=()
 echo
 echo "Plan:"
 
+INVALID=()
+
 for batch in "${BATCHES[@]}" ; do
+
+    # cmc.sh exits if the manifest fails validation, so check now before anything is deleted
+    if ! validation=$("$PIPELINE_DIR"/SCRIPTS/check_manifest.sh MANIFESTS/"$batch" 2>&1) ; then
+        echo "  ${batch}: manifest failed validation - skipped"
+        echo "$validation" | head -n 5 | sed 's,^,      ,'
+        [ "$(echo "$validation" | wc -l)" -gt 5 ] && echo "      ... run check_manifest.sh MANIFESTS/${batch} for the full list"
+        INVALID+=("$batch")
+        continue
+    fi
 
     delete=()
     run=()
@@ -156,6 +167,11 @@ for batch in "${BATCHES[@]}" ; do
 done
 
 echo
+
+if [ ${#INVALID[@]} -gt 0 ] ; then
+    echo "Skipping batches whose manifest failed validation: ${INVALID[*]}"
+    echo
+fi
 
 if [ ${#PLAN_BATCHES[@]} -eq 0 ] ; then
     echo "Nothing to do"
@@ -216,6 +232,7 @@ done
 echo
 echo "Summary:"
 printf '%s\n' "${RESULTS[@]}"
+for batch in "${INVALID[@]}" ; do printf '%-20s %s\n' "$batch" "skipped - manifest failed validation" ; done
 
-[ "$FAILED" == "true" ] && exit 1
+[ "$FAILED" == "true" ] || [ ${#INVALID[@]} -gt 0 ] && exit 1
 exit 0

@@ -23,7 +23,7 @@ MANIFEST=$1
 OUTDIR=$2
 
 # confirm that manifest is correctly formatted and all read files exist
-SCRIPTS/check_manifest.sh "$MANIFEST" || exit 1
+"$SCRIPTS_DIR"/check_manifest.sh "$MANIFEST" || exit 1
 
 # check if output directory exists
 if [ -d "$OUTDIR" ] ; then
@@ -37,6 +37,9 @@ else
     mkdir -p "$OUTDIR"
 
 fi
+
+# use an absolute path so the assembly paths saved below work from any directory
+OUTDIR=$(cd "$OUTDIR" && pwd)
 
 # make directory to store software version info if needed
 if [ ! -d "${OUTDIR}/VERSIONS/" ] ; then mkdir -p "$OUTDIR"/VERSIONS/ ; fi 
