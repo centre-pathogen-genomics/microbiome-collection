@@ -7,6 +7,7 @@ This repository contains scripts for quality control, assembly, annotation, and 
 ## Contents
 - [Setup](#setup)
 - [Quick Start](#quick-start)
+- [Rerunning All Batches](#rerunning-all-batches)
 - [Requirements](#requirements)
 - [Input Manifest Format](#input-manifest-format)
 - [Manifest Generation Utility](#manifest-generation-utility)
@@ -67,7 +68,29 @@ microbiome-collection/cmc.sh MANIFESTS/Run1 CMC_DB/Run1/
 
 Notes:
 - Individual steps can only be run on an output directory that `cmc.sh` or `cmc_prelim.sh` has already been run on at least once. That first run creates the hidden `.manifest`, `.asspaths` and `.assnames` files that each step reads.
-- Prokka, eggNOG-mapper and antiSMASH create their output directory before they start. If one of these steps fails, delete its output directory before rerunning `cmc.sh`, otherwise the step will be skipped.
+- geNomad, Prokka, eggNOG-mapper and antiSMASH create their output directory before they start. If one of these steps fails, delete its output directory before rerunning `cmc.sh`, otherwise the step will be skipped.
+
+## Rerunning All Batches
+`SCRIPTS/rerun_all.sh` reruns `cmc.sh` on every batch that has already been processed, e.g. after adding a new step or updating a tool. A batch is included if it has an output directory `CMC_DB/<batch>/` and a matching manifest `MANIFESTS/<batch>`. Output directories with no manifest, and manifests for batches that have not been processed yet, are listed and skipped.
+
+Steps to rerun are given as output directory names (case-insensitive). These directories are deleted in every batch before `cmc.sh` is run, so the steps are run again:
+```bash
+microbiome-collection/SCRIPTS/rerun_all.sh GENOMAD          # redo geNomad in every batch
+microbiome-collection/SCRIPTS/rerun_all.sh                  # only run steps whose output directories are missing
+microbiome-collection/SCRIPTS/rerun_all.sh --dry-run PROKKA # show what would be deleted and run
+```
+
+- Steps that use the output of a named step are rerun too: `FASTP` reruns everything, `SHOVILL` reruns every step after assembly, and `PROKKA` also reruns eggNOG-mapper and antiSMASH.
+- `DB/` is rebuilt in any batch where a step is run, so the database tables include the new outputs.
+- Batches with nothing to run are skipped.
+- The plan for each batch is printed and must be confirmed before anything is deleted. Use `--dry-run` to only print the plan, or `--yes` to skip the confirmation (e.g. when running with `nohup`).
+- Batches run one at a time. Each batch's output is written to `CMC_DB/<batch>/rerun_<date>_<time>.log`, and if a batch fails the script moves on to the next one. A batch is reported as failed if `cmc.sh` exits with an error or any step that should have run has no output directory. A summary is printed at the end.
+- `THREADS` is passed through to every step, e.g. `THREADS=48 microbiome-collection/SCRIPTS/rerun_all.sh GENOMAD`.
+
+Runs can take many hours, so start it in `tmux`/`screen`, or with `nohup` and `--yes`:
+```bash
+nohup microbiome-collection/SCRIPTS/rerun_all.sh --yes GENOMAD > rerun.nohup 2>&1 &
+```
 
 ## Requirements
 Each step activates its own conda environment. Paths to conda, the environments and the reference databases are currently hardcoded in each script, so update these if running on a different system:
@@ -79,6 +102,7 @@ Each step activates its own conda environment. Paths to conda, the environments 
 |checkm2|checkm.sh|
 |gtdbtk|gtdbtk_classify.sh, denovotree.sh (also needs `csvtk`)|
 |abritamr|abritamr.sh|
+|genomad|genomad.sh|
 |prokka|prokka.sh|
 |eggnog-mapper|emapper.sh|
 |antismash|antismash.sh|
@@ -138,6 +162,7 @@ flowchart TD
     CHECKM["<b>CheckM2</b><br/>Completeness and contamination<br/><i>CHECKM/</i>"]
     GTDB["<b>GTDB-Tk</b><br/>Taxonomic classification<br/><i>GTDBTK/</i>"]
     AMR["<b>abriTAMR</b><br/>AMR, stress and virulence genes<br/><i>ABRITAMR/</i>"]
+    GENOMAD["<b>geNomad</b><br/>Plasmid and virus/prophage identification<br/><i>GENOMAD/</i>"]
     PROKKA["<b>Prokka</b><br/>Gene prediction and annotation<br/><i>PROKKA/</i>"]
     EMAP["<b>eggNOG-mapper</b><br/>Functional annotation of proteins<br/><i>EMAPPER/</i>"]
     ANTI["<b>antiSMASH</b><br/>Biosynthetic gene clusters<br/><i>ANTISMASH/</i>"]
@@ -153,6 +178,7 @@ flowchart TD
     FILTER --> CHECKM
     FILTER --> GTDB
     FILTER --> AMR
+    FILTER --> GENOMAD
     FILTER --> PROKKA
     PROKKA -->|"proteins"| EMAP
     PROKKA -->|"genome + GFF"| ANTI
@@ -161,12 +187,13 @@ flowchart TD
     CHECKM -.->|"genome_qc.tsv"| DB
     GTDB -.->|"genome_taxonomy_*.tsv"| DB
     AMR -.->|"abritamr.tsv"| DB
+    GENOMAD -.->|"genomad_plasmid.tsv<br/>genomad_virus.tsv"| DB
     EMAP -.->|"emapper_combined.tsv"| DB
 
     classDef prelim fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
     classDef full fill:#f3f4f6,stroke:#6b7280,color:#111827
     class FASTP,SHOVILL,CHECKM,GTDB prelim
-    class AMR,PROKKA,EMAP,ANTI full
+    class AMR,GENOMAD,PROKKA,EMAP,ANTI full
 ```
 
 Steps shaded blue are also run by `cmc_prelim.sh`, which writes its tables to `DB_PRELIM/` instead of `DB/`. Dotted arrows show which outputs are combined into the database tables (see _Database Files_ below).
@@ -179,12 +206,15 @@ Steps shaded blue are also run by `cmc_prelim.sh`, which writes its tables to `D
 |3|[CheckM2](https://github.com/chklovski/CheckM2)|Assembly quality assessment|CHECKM/|
 |4|[GTDB-Tk](https://github.com/Ecogenomics/GTDBTk)|Taxonomic classification|GTDBTK/|
 |5|[abriTAMR](https://github.com/MDU-PHL/abritamr)|AMR profiling|ABRITAMR/|
-|6|[Prokka](https://github.com/tseemann/prokka)|Genome annotation|PROKKA/|
-|7|[eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)|Functional annotation of Prokka-predicted proteins|EMAPPER/|
-|8|[antiSMASH](https://github.com/antismash/antismash)|Identify secondary metabolite biosynthetic gene clusters|ANTISMASH/|
-|9|`db_files.sh`|Combine per-isolate outputs into database tables|DB/|
+|6|[geNomad](https://github.com/apcamargo/genomad)|Identify plasmid and virus/prophage contigs|GENOMAD/|
+|7|[Prokka](https://github.com/tseemann/prokka)|Genome annotation|PROKKA/|
+|8|[eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)|Functional annotation of Prokka-predicted proteins|EMAPPER/|
+|9|[antiSMASH](https://github.com/antismash/antismash)|Identify secondary metabolite biosynthetic gene clusters|ANTISMASH/|
+|10|`db_files.sh`|Combine per-isolate outputs into database tables|DB/|
 
 Steps 3 onwards only run on isolates with a non-empty assembly. Software versions for each step are written to VERSIONS/.
+
+geNomad is run once per batch rather than once per isolate, so its database is only loaded once. `genomad.sh` concatenates all non-empty assemblies into one file, prefixing each contig name with its CMC ID (e.g. `CMC00001__contig00001`), since shovill gives every assembly the same contig names. The length and coverage from the shovill contig headers are saved to `GENOMAD/shovill_coverage.tsv` and added to the database tables. The batch-level geNomad results are in `GENOMAD/cmc_batch_summary/`, and the plasmid and virus sequences are also split into one file per isolate (`GENOMAD/<CMC ID>/<CMC ID>_plasmid.fna` and `_virus.fna`).
 
 ## Database Files
 The final step (`SCRIPTS/db_files.sh`) combines the per-isolate outputs into one table per tool for the whole batch, formatted for import into FileMaker Pro. Each table has one row per isolate (or per hit) and a column identifying the CMC isolate: `SampleID` in read_qc.csv, abritamr.tsv and emapper_combined.tsv, `Name` in genome_qc.tsv, and `user_genome` in the taxonomy tables. Tables are written to `DB/` in the output directory:
@@ -196,6 +226,8 @@ The final step (`SCRIPTS/db_files.sh`) combines the per-isolate outputs into one
 |genome_taxonomy_bac.tsv|GTDB-Tk bac120 summary|GTDB taxonomic classification of bacterial genomes (without the long `other_related_references` column)|
 |genome_taxonomy_ar.tsv|GTDB-Tk ar53 summary|As above for archaeal genomes (only created if any were found)|
 |abritamr.tsv|AMRFinderPlus output from abriTAMR|All AMR, stress and virulence gene hits|
+|genomad_plasmid.tsv|geNomad plasmid summary|One row per contig classified as plasmid, with the geNomad plasmid score, topology, hallmark, conjugation and AMR genes, plus the contig's shovill `shovill_length` and `shovill_coverage`|
+|genomad_virus.tsv|geNomad virus summary|One row per viral contig or prophage region (prophages have a `\|provirus_<start>_<end>` suffix on the contig name), with the geNomad virus score and taxonomy, plus the shovill length and coverage of the contig it was found on|
 |emapper_combined.tsv|eggNOG-mapper annotations|All eggNOG-mapper annotations, one row per protein|
 
 `cmc_prelim.sh` runs `SCRIPTS/db_files_prelim.sh` instead, which only produces read_qc.csv, genome_qc.tsv and the taxonomy tables, and writes them to `DB_PRELIM/` so they are kept separate from the full pipeline outputs in `DB/`.

@@ -94,6 +94,34 @@ csvtk concat -t "$OUTDIR"/ABRITAMR/*/*_amrfinder_sampleid.out > "$OUTDIR"/DB/abr
 
 rm -rf "$OUTDIR"/.names
 
+# genomad
+# split the prefixed contig names (CMC00001__contig00001) back into SampleID and contig, and add shovill length and coverage
+# provirus names have a suffix (CMC00001__contig00001|provirus_1_20000) so coverage is taken from the host contig
+for type in plasmid virus ; do
+
+    if [ -f "$OUTDIR"/GENOMAD/cmc_batch_summary/cmc_batch_"$type"_summary.tsv ] ; then
+
+        awk -F'\t' -v OFS='\t' '
+            NR == FNR { len[$1] = $2 ; cov[$1] = $3 ; next }
+
+            FNR == 1 {
+                $1 = "contig"
+                print "SampleID", $0, "shovill_length", "shovill_coverage"
+                next
+            }
+
+            {
+                host = $1 ; sub(/\|provirus_.*/, "", host)
+                cmc = $1 ; sub(/__.*/, "", cmc)
+                $1 = substr($1, length(cmc) + 3)
+                print cmc, $0, len[host], cov[host]
+            }
+        ' "$OUTDIR"/GENOMAD/shovill_coverage.tsv "$OUTDIR"/GENOMAD/cmc_batch_summary/cmc_batch_"$type"_summary.tsv > "$OUTDIR"/DB/genomad_"$type".tsv
+
+    fi
+
+done
+
 # eggnog_mapper
 ls "$OUTDIR"/EMAPPER/*/*.emapper.annotations | sed 's,.*/,, ; s,\.emapper\.annotations,,' > "$OUTDIR"/.names
 

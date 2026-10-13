@@ -69,6 +69,9 @@ if [ ! -d "$OUTDIR"/GTDBTK/ ] ; then "$SCRIPTS_DIR"/gtdbtk_classify.sh "$OUTDIR"
 # run abritamr amr profiling
 if [ ! -d "$OUTDIR"/ABRITAMR/ ] ; then "$SCRIPTS_DIR"/abritamr.sh "$OUTDIR" ; fi
 
+# run genomad plasmid and virus identification
+if [ ! -d "$OUTDIR"/GENOMAD/ ] ; then "$SCRIPTS_DIR"/genomad.sh "$OUTDIR" ; fi
+
 # run prokka
 if [ ! -d "$OUTDIR"/PROKKA/ ] ; then "$SCRIPTS_DIR"/prokka.sh "$OUTDIR" ; fi
 
