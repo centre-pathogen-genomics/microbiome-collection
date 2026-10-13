@@ -8,7 +8,7 @@ conda activate /home/shared/conda/envs/genomad
 THREADS=${THREADS:-24}
 
 OUTDIR=$1
-GENOMAD_DB=/home/shared/db/genomad/genomad_db
+GENOMAD_DB=/home/shared/db/genomad/
 
 mkdir -p "$OUTDIR"/GENOMAD/
 
