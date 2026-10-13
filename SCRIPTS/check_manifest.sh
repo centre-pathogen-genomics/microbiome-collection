@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# usage: SCRIPTS/check_manifest.sh inputmanifest
+# usage: microbiome-collection/SCRIPTS/check_manifest.sh inputmanifest
 
 # validates the input manifest before running the pipeline
 # expects a headerless TSV with four columns:

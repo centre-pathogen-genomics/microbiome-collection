@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# usage: ./cmc.sh inputmanifest outputdirectory
+# usage: microbiome-collection/cmc.sh inputmanifest outputdirectory (run from cmc/)
 
-# requires the presence of SCRIPTS/ in the working directory
+# can be run from any directory - SCRIPTS/ is found relative to this script
 
 # for the manifest:
 # column 1 is the DAMG ID
@@ -20,6 +20,9 @@ else
   echo "ERROR: Cannot find conda.sh at /home/shared/conda/etc/profile.d/conda.sh"
   exit 1
 fi
+
+# directory containing the step scripts
+SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/SCRIPTS
 
 MANIFEST=$1
 OUTDIR=$2
@@ -47,10 +50,10 @@ if [ ! -d "${OUTDIR}/VERSIONS/" ] ; then mkdir -p "$OUTDIR"/VERSIONS/ ; fi
 cp "$MANIFEST" "$OUTDIR"/.manifest
 
 # run fastp qc
-if [ ! -d "$OUTDIR"/FASTP/ ] ; then SCRIPTS/fastp.sh "$OUTDIR" ; fi
+if [ ! -d "$OUTDIR"/FASTP/ ] ; then "$SCRIPTS_DIR"/fastp.sh "$OUTDIR" ; fi
 
 # run shovill assembly
-if [ ! -d "$OUTDIR"/SHOVILL/ ] ; then SCRIPTS/shovill.sh "$OUTDIR" ; fi
+if [ ! -d "$OUTDIR"/SHOVILL/ ] ; then "$SCRIPTS_DIR"/shovill.sh "$OUTDIR" ; fi
 
 # make files of sample names and assembly locations
 # only for non-empty assemblies
@@ -58,22 +61,22 @@ find "$OUTDIR"/SHOVILL/ -type f -name '*_contigs.fa' -size +0c > "$OUTDIR"/.assp
 sed 's,.*/,, ; s,_contigs.fa$,,' "$OUTDIR"/.asspaths > "$OUTDIR"/.assnames
 
 # run assembly qc
-if [ ! -d "$OUTDIR"/CHECKM/ ] ; then SCRIPTS/checkm.sh "$OUTDIR" ; fi
+if [ ! -d "$OUTDIR"/CHECKM/ ] ; then "$SCRIPTS_DIR"/checkm.sh "$OUTDIR" ; fi
 
 # run gtdbtk taxonomic classification
-if [ ! -d "$OUTDIR"/GTDBTK/ ] ; then SCRIPTS/gtdbtk_classify.sh "$OUTDIR" ; fi
+if [ ! -d "$OUTDIR"/GTDBTK/ ] ; then "$SCRIPTS_DIR"/gtdbtk_classify.sh "$OUTDIR" ; fi
 
 # run abritamr amr profiling
-if [ ! -d "$OUTDIR"/ABRITAMR/ ] ; then SCRIPTS/abritamr.sh "$OUTDIR" ; fi
+if [ ! -d "$OUTDIR"/ABRITAMR/ ] ; then "$SCRIPTS_DIR"/abritamr.sh "$OUTDIR" ; fi
 
 # run prokka
-if [ ! -d "$OUTDIR"/PROKKA/ ] ; then SCRIPTS/prokka.sh "$OUTDIR" ; fi
+if [ ! -d "$OUTDIR"/PROKKA/ ] ; then "$SCRIPTS_DIR"/prokka.sh "$OUTDIR" ; fi
 
 # run eggnog-mapper
-if [ ! -d "$OUTDIR"/EMAPPER/ ] ; then SCRIPTS/emapper.sh "$OUTDIR" ; fi
+if [ ! -d "$OUTDIR"/EMAPPER/ ] ; then "$SCRIPTS_DIR"/emapper.sh "$OUTDIR" ; fi
 
 # run antismash
-if [ ! -d "$OUTDIR"/ANTISMASH/ ] ; then SCRIPTS/antismash.sh "$OUTDIR" ; fi
+if [ ! -d "$OUTDIR"/ANTISMASH/ ] ; then "$SCRIPTS_DIR"/antismash.sh "$OUTDIR" ; fi
 
 # format DB files
-if [ ! -d "$OUTDIR"/DB/ ] ; then SCRIPTS/db_files.sh "$OUTDIR" ; fi
+if [ ! -d "$OUTDIR"/DB/ ] ; then "$SCRIPTS_DIR"/db_files.sh "$OUTDIR" ; fi

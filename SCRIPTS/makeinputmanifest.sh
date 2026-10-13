@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# example usage: ./makeinputmanifest.sh names /home/damg/data/I2024-018
+# example usage (run from cmc/): microbiome-collection/SCRIPTS/makeinputmanifest.sh names /home/damg/data/I2024-018
+# writes the manifest to MANIFESTS/ in the current directory
 
 # requires 2 column TSV and name of directory where reads are stored
 # currently only works for illumina data (looks for R1 and R2)

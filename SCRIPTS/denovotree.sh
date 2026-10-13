@@ -1,6 +1,16 @@
 #!/bin/bash
 
-# run from /home/damg/cmc/ANALYSIS/
+# usage: microbiome-collection/SCRIPTS/denovotree.sh (run from cmc/)
+
+# must be run from the cmc/ directory containing CMC_DB/
+# outputs are written to ANALYSIS/
+if [ ! -d CMC_DB/ ] ; then
+    echo "ERROR: CMC_DB/ not found - run this script from the cmc/ directory"
+    exit 1
+fi
+
+mkdir -p ANALYSIS/
+cd ANALYSIS/ || exit 1
 
 # source conda and load env
 source /home/shared/conda/etc/profile.d/conda.sh
