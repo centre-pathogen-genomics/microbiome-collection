@@ -4,6 +4,17 @@
 
 This repository contains scripts for quality control, assembly, annotation, and taxonomic classification of isolate genomes. The workflow is designed for high-throughput processing of samples from a single sequencing batch (e.g. isolates sequenced periodically as part of an ongoing project), but it can be applied to any collection of bacterial isolates.
 
+## Contents
+- [Quick Start](#quick-start)
+- [Requirements](#requirements)
+- [Input Manifest Format](#input-manifest-format)
+- [Manifest Generation Utility](#manifest-generation-utility)
+- [Pipeline Overview](#pipeline-overview)
+- [Current Pipeline Steps](#current-pipeline-steps)
+- [Database Files](#database-files)
+- [Collection-wide Analysis](#collection-wide-analysis)
+- [Next steps](#next-steps)
+
 ## Quick Start
 The pipeline requires two positional arguments
 - path to the input manifest (see _Input Manifest Format_ below)
@@ -35,20 +46,26 @@ rm -rf Output_Run1/PROKKA
 ./cmc.sh manifest_Run1.tsv Output_Run1/
 ```
 
+Notes:
+- Individual steps can only be run on an output directory that `cmc.sh` or `cmc_prelim.sh` has already been run on at least once. That first run creates the hidden `.manifest`, `.asspaths` and `.assnames` files that each step reads.
+- Prokka, eggNOG-mapper and antiSMASH create their output directory before they start. If one of these steps fails, delete its output directory before rerunning `cmc.sh`, otherwise the step will be skipped.
+
 ## Requirements
 Each step activates its own conda environment. Paths to conda, the environments and the reference databases are currently hardcoded in each script, so update these if running on a different system:
 
 |Environment|Used by|
 |---|---|
-|fastp|fastp.sh, db_files.sh (also needs `jq` and `csvtk`)|
+|fastp|fastp.sh, db_files.sh, db_files_prelim.sh (also needs `jq` and `csvtk`)|
 |shovill|shovill.sh|
 |checkm2|checkm.sh|
-|gtdbtk|gtdbtk_classify.sh, denovotree.sh|
+|gtdbtk|gtdbtk_classify.sh, denovotree.sh (also needs `csvtk`)|
 |abritamr|abritamr.sh|
 |prokka|prokka.sh|
 |eggnog-mapper|emapper.sh|
 |antismash|antismash.sh|
-|drep|drep.sh|
+|drep|drep.sh (also needs `csvtk`)|
+
+`cmc_summarise.sh` does not activate a conda environment and needs `csvtk` and GNU `parallel` available on the PATH.
 
 Every step uses 24 threads by default. To change this, set `THREADS` when launching, e.g. `THREADS=48 ./cmc.sh manifest_Run1.tsv Output_Run1/`.
 
@@ -56,8 +73,8 @@ Every step uses 24 threads by default. To change this, set `THREADS` when launch
 The input manifest is a headerless TSV file with four columns, one row per isolate:
 |Column|Description|
 |---|---|
-|1|Sample basename (e.g. sequencing ID or barcode, e.g. DMG2306286)|
-|2|CMC isolate ID (used to rename outputs)|
+|1|Sample basename (e.g. sequencing ID or barcode, e.g. DMG2306286). Only checked during validation and not used by the pipeline itself; `makeinputmanifest.sh` uses it to find the FASTQs|
+|2|CMC isolate ID. All output files and folders are named by this ID|
 |3|Absolute path to R1 FASTQ|
 |4|Absolute path to R2 FASTQ|
 
@@ -77,12 +94,14 @@ Before anything runs, the manifest is checked by `SCRIPTS/check_manifest.sh` (wh
 
 ## Manifest Generation Utility
 A helper script is provided to automatically generate the manifest.
-If you have a two-column file (called _names_ in the example below) containing sample basenames and CMC IDs, and a directory with the FASTQs, you can run:
+If you have a two-column, tab-separated file (called _names_ in the example below) containing sample basenames and CMC IDs, and a directory with the FASTQs, you can run:
 ```bash
 SCRIPTS/makeinputmanifest.sh names /path/to/data/directory/
 ```
 This simple script loops over each entry in names, lists the corresponding R1 and R2 FASTQs in the specified directory, and creates a complete four-column manifest.
-(Note: this script is not smart — it assumes consistent file naming and structure.)
+The manifest is written to `MANIFESTS/<name of the reads directory>` (with no file extension), relative to where the script is run. In the example above this would be `MANIFESTS/directory`.
+
+(Note: this script is not smart — it assumes consistent file naming and structure. FASTQs must be named `<sample basename>_S*_R1_001.fastq.gz` and `<sample basename>_S*_R2_001.fastq.gz`, and the names file must be tab-separated, otherwise the manifest will fail validation.)
 
 ## Pipeline Overview
 ```mermaid
@@ -149,18 +168,39 @@ Steps shaded blue are also run by `cmc_prelim.sh`, which writes its tables to `D
 Steps 3 onwards only run on isolates with a non-empty assembly. Software versions for each step are written to VERSIONS/.
 
 ## Database Files
-The final step (`SCRIPTS/db_files.sh`) combines the per-isolate outputs into one table per tool for the whole batch, formatted for import into FileMaker Pro. Each table has one row per isolate (or per hit) and a sample ID column identifying the CMC isolate. Tables are written to `DB/` in the output directory:
+The final step (`SCRIPTS/db_files.sh`) combines the per-isolate outputs into one table per tool for the whole batch, formatted for import into FileMaker Pro. Each table has one row per isolate (or per hit) and a column identifying the CMC isolate: `SampleID` in read_qc.csv, abritamr.tsv and emapper_combined.tsv, `Name` in genome_qc.tsv, and `user_genome` in the taxonomy tables. Tables are written to `DB/` in the output directory:
 
 |File|Source|Contents|
 |---|---|---|
 |read_qc.csv|fastp JSON reports|Post-filtering read and base counts, Q20/Q30 rates, mean read lengths, GC content and counts of reads removed by each filter|
-|genome_qc.tsv|CheckM2 quality_report.tsv|CheckM2 completeness, contamination and assembly statistics, plus a `QC_Notes` column: `pass`, or `low completeness` (<90%) and/or `high contamination` (>5%)|
+|genome_qc.tsv|CheckM2 quality_report.tsv|CheckM2 completeness, contamination and assembly statistics, plus a `QC_Notes` column: `pass`, or `low completeness` (<90%) and/or `high contamination` (≥5%)|
 |genome_taxonomy_bac.tsv|GTDB-Tk bac120 summary|GTDB taxonomic classification of bacterial genomes (without the long `other_related_references` column)|
 |genome_taxonomy_ar.tsv|GTDB-Tk ar53 summary|As above for archaeal genomes (only created if any were found)|
 |abritamr.tsv|AMRFinderPlus output from abriTAMR|All AMR, stress and virulence gene hits|
 |emapper_combined.tsv|eggNOG-mapper annotations|All eggNOG-mapper annotations, one row per protein|
 
 `cmc_prelim.sh` runs `SCRIPTS/db_files_prelim.sh` instead, which only produces read_qc.csv, genome_qc.tsv and the taxonomy tables, and writes them to `DB_PRELIM/` so they are kept separate from the full pipeline outputs in `DB/`.
+
+## Collection-wide Analysis
+Three further scripts combine and compare genomes across all processed batches, rather than a single batch. They are run from `/home/damg/cmc/ANALYSIS/` and expect each batch's pipeline output to be in `../CMC_DB/<batch>/`. Run them in this order:
+```bash
+SCRIPTS/cmc_summarise.sh
+SCRIPTS/drep.sh
+SCRIPTS/denovotree.sh
+```
+
+|Script|Inputs|Outputs|Purpose|
+|---|---|---|---|
+|`cmc_summarise.sh`|`../CMC_DB/*/DB/` tables from each batch|`DB_FILES/cmc_genome_qc.tsv`, `cmc_genome_tax.tsv`, `cmc_read_qc.tsv`, their `*_filtered.tsv` versions, and `manifest.tsv`|Combine the read QC, genome QC and bacterial taxonomy tables from every batch, and filter to genomes with CheckM2 completeness ≥90% and contamination <5%. `manifest.tsv` lists the CMC ID and assembly path of each genome passing QC|
+|`drep.sh`|`DB_FILES/manifest.tsv`, `DB_FILES/cmc_genome_qc_filtered.tsv`|`DREP/<threshold>/`, `DB_FILES/drep_clusterinfo.csv`, `drep_clusterreps.csv`, `drep_99anipairs.csv`|Dereplicate QC-passing genomes with [dRep](https://github.com/MrOlm/drep) (fastANI) at 95, 98, 99, 99.9, 99.99 and 99.999% ANI|
+|`denovotree.sh`|`DB_FILES/manifest.tsv`, `DB_FILES/cmc_genome_tax_filtered.tsv`|`DENOVOTREE/`|Build a GTDB-Tk _de novo_ bacterial tree of QC-passing genomes, without GTDB reference genomes, rooted on p__Pseudomonadota|
+
+The dRep tables in `DB_FILES/` are:
+|File|Contents|
+|---|---|
+|drep_clusterinfo.csv|The cluster each genome belongs to at every ANI threshold, one row per genome|
+|drep_clusterreps.csv|The representative genome chosen for each cluster at every threshold|
+|drep_99anipairs.csv|All genome pairs with ≥99% ANI, with ANI and alignment coverage|
 
 ## Next steps
 Major

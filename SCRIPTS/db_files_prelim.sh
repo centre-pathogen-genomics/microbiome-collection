@@ -65,7 +65,7 @@ sed 's,_contigs,,' "$OUTDIR"/CHECKM/quality_report.tsv \
         {
             notes = ""
             if ($col["Completeness"] < 90) notes = "low completeness"
-            if ($col["Contamination"] > 5) notes = (notes == "" ? "" : notes ", ") "high contamination"
+            if ($col["Contamination"] >= 5) notes = (notes == "" ? "" : notes ", ") "high contamination"
             print $0, (notes == "" ? "pass" : notes)
         }
     ' > "$OUTDIR"/DB_PRELIM/genome_qc.tsv

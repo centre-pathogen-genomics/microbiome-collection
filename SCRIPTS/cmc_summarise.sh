@@ -4,7 +4,7 @@
 
 mkdir -p DB_FILES/
 
-# combine outputs from prelim analysis of all cmc genomes
+# combine outputs from all cmc batches
 csvtk concat -t ../CMC_DB/*/DB/genome_qc.tsv -T > DB_FILES/cmc_genome_qc.tsv
 csvtk concat -t ../CMC_DB/*/DB/genome_taxonomy_bac.tsv -T > DB_FILES/cmc_genome_tax.tsv
 csvtk concat ../CMC_DB/*/DB/read_qc.csv -T > DB_FILES/cmc_read_qc.tsv
