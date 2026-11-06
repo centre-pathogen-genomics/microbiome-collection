@@ -68,7 +68,7 @@ microbiome-collection/cmc.sh MANIFESTS/Run1 CMC_DB/Run1/
 
 Notes:
 - Individual steps can only be run on an output directory that `cmc.sh` or `cmc_prelim.sh` has already been run on at least once. That first run creates the hidden `.manifest`, `.asspaths` and `.assnames` files that each step reads.
-- geNomad, Prokka, eggNOG-mapper and antiSMASH create their output directory before they start. If one of these steps fails, delete its output directory before rerunning `cmc.sh`, otherwise the step will be skipped.
+- geNomad, Prokka, eggNOG-mapper, antiSMASH and gutSMASH create their output directory before they start. If one of these steps fails, delete its output directory before rerunning `cmc.sh`, otherwise the step will be skipped.
 
 ## Rerunning All Batches
 `SCRIPTS/rerun_all.sh` reruns `cmc.sh` on every batch that has already been processed, e.g. after adding a new step or updating a tool. A batch is included if it has an output directory `CMC_DB/<batch>/` and a matching manifest `MANIFESTS/<batch>`. Output directories with no manifest, and manifests for batches that have not been processed yet, are listed and skipped.
@@ -80,7 +80,7 @@ microbiome-collection/SCRIPTS/rerun_all.sh                  # only run steps who
 microbiome-collection/SCRIPTS/rerun_all.sh --dry-run PROKKA # show what would be deleted and run
 ```
 
-- Steps that use the output of a named step are rerun too: `FASTP` reruns everything, `SHOVILL` reruns every step after assembly, and `PROKKA` also reruns eggNOG-mapper and antiSMASH.
+- Steps that use the output of a named step are rerun too: `FASTP` reruns everything, `SHOVILL` reruns every step after assembly, and `PROKKA` also reruns eggNOG-mapper, antiSMASH and gutSMASH.
 - `DB/` is rebuilt in any batch where a step is run, so the database tables include the new outputs.
 - Batches with nothing to run are skipped.
 - The plan for each batch is printed and must be confirmed before anything is deleted. Use `--dry-run` to only print the plan, or `--yes` to skip the confirmation (e.g. when running with `nohup`).
@@ -106,6 +106,7 @@ Each step activates its own conda environment. Paths to conda, the environments 
 |prokka|prokka.sh|
 |eggnog-mapper|emapper.sh|
 |antismash|antismash.sh|
+|gutsmash|gutsmash.sh|
 |drep|drep.sh (also needs `csvtk`)|
 
 `cmc_summarise.sh` does not activate a conda environment and needs `csvtk` and GNU `parallel` available on the PATH.
@@ -166,6 +167,7 @@ flowchart TD
     PROKKA["<b>Prokka</b><br/>Gene prediction and annotation<br/><i>PROKKA/</i>"]
     EMAP["<b>eggNOG-mapper</b><br/>Functional annotation of proteins<br/><i>EMAPPER/</i>"]
     ANTI["<b>antiSMASH</b><br/>Biosynthetic gene clusters<br/><i>ANTISMASH/</i>"]
+    GUT["<b>gutSMASH</b><br/>Primary metabolic gene clusters<br/><i>GUTSMASH/</i>"]
 
     DB[("<b>db_files.sh</b><br/>One table per tool for the batch,<br/>formatted for FileMaker Pro<br/><i>DB/</i>")]
 
@@ -182,6 +184,7 @@ flowchart TD
     FILTER --> PROKKA
     PROKKA -->|"proteins"| EMAP
     PROKKA -->|"genome + GFF"| ANTI
+    PROKKA -->|"GenBank"| GUT
 
     FASTP -.->|"read_qc.csv"| DB
     CHECKM -.->|"genome_qc.tsv"| DB
@@ -193,7 +196,7 @@ flowchart TD
     classDef prelim fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
     classDef full fill:#f3f4f6,stroke:#6b7280,color:#111827
     class FASTP,SHOVILL,CHECKM,GTDB prelim
-    class AMR,GENOMAD,PROKKA,EMAP,ANTI full
+    class AMR,GENOMAD,PROKKA,EMAP,ANTI,GUT full
 ```
 
 Steps shaded blue are also run by `cmc_prelim.sh`, which writes its tables to `DB_PRELIM/` instead of `DB/`. Dotted arrows show which outputs are combined into the database tables (see _Database Files_ below).
@@ -210,7 +213,8 @@ Steps shaded blue are also run by `cmc_prelim.sh`, which writes its tables to `D
 |7|[Prokka](https://github.com/tseemann/prokka)|Genome annotation|PROKKA/|
 |8|[eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)|Functional annotation of Prokka-predicted proteins|EMAPPER/|
 |9|[antiSMASH](https://github.com/antismash/antismash)|Identify secondary metabolite biosynthetic gene clusters|ANTISMASH/|
-|10|`db_files.sh`|Combine per-isolate outputs into database tables|DB/|
+|10|[gutSMASH](https://github.com/victoriapascal/gutsmash)|Identify primary metabolic gene clusters of anaerobic gut bacteria|GUTSMASH/|
+|11|`db_files.sh`|Combine per-isolate outputs into database tables|DB/|
 
 Steps 3 onwards only run on isolates with a non-empty assembly. Software versions for each step are written to VERSIONS/.
 
@@ -261,7 +265,6 @@ Minor
 - Add support for ONT and hybrid assemblies
 - Alternative taxonomic classification: [Barbet](https://github.com/houndry/barbet)
 - Alternative annotation: [Bakta](https://github.com/oschwengers/bakta)
-- Functional profiling: [gutSMASH](https://github.com/victoriapascal/gutsmash)
 - Bacteriocin detection: [BAGEL](https://github.com/annejong/BAGEL4)
 - CAZyme detection: [dbCAN3](https://bcb.unl.edu/dbCAN3/)
 - Phenotypic trait prediction: [Traitar](https://github.com/hzi-bifo/traitar)

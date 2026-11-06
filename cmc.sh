@@ -84,5 +84,8 @@ if [ ! -d "$OUTDIR"/EMAPPER/ ] ; then "$SCRIPTS_DIR"/emapper.sh "$OUTDIR" ; fi
 # run antismash
 if [ ! -d "$OUTDIR"/ANTISMASH/ ] ; then "$SCRIPTS_DIR"/antismash.sh "$OUTDIR" ; fi
 
+# run gutsmash
+if [ ! -d "$OUTDIR"/GUTSMASH/ ] ; then "$SCRIPTS_DIR"/gutsmash.sh "$OUTDIR" ; fi
+
 # format DB files
 if [ ! -d "$OUTDIR"/DB/ ] ; then "$SCRIPTS_DIR"/db_files.sh "$OUTDIR" ; fi
