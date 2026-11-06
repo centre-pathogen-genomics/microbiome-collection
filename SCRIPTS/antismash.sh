@@ -20,8 +20,8 @@ while read i j ; do
 		--databases /home/shared/db/antismash/ \
 		--output-dir "$OUTDIR"/ANTISMASH/"$i" \
 		--output-basename "$i" \
-		--genefinding-gff3 "$OUTDIR"/PROKKA/"$i"/"$i".gff \
-		"$OUTDIR"/PROKKA/"$i"/"$i".fna
+		--cb-knownclusters \
+		"$OUTDIR"/PROKKA/"$i"/"$i".gbk
 
 done < "$OUTDIR"/.isolatesbatchfile
 
